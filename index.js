@@ -7,6 +7,7 @@ morgan.token('body', req =>
 )
 
 const app = express()
+app.use(express.static('build'))
 app.use(bodyParser.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
