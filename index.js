@@ -1,6 +1,8 @@
 const express = require('express')
-
 const app = express()
+const bodyParser = require('body-parser')
+
+app.use(bodyParser.json())
 
 let persons = 
 [
@@ -34,6 +36,17 @@ app.get('/api/persons/:id', (req, res) => {
   const id = Number(req.params.id)
   const person = persons.find(person => person.id === id)
   if (!person) return res.status('404').end()
+  res.json(person)
+})
+
+app.post('/api/persons', (req, res) => {
+  const body = req.body
+  const person = {
+    id: Math.floor(Math.random() * 1000000),
+    name: body.name,
+    number: body.number
+  }
+  persons = persons.concat(person)
   res.json(person)
 })
 
