@@ -4,8 +4,8 @@ const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const Person = require('./models/person')
 
-morgan.token('body', req => 
-  isEmptyObject(req.body) ? '' : JSON.stringify(req.body) 
+morgan.token('body', req =>
+  isEmptyObject(req.body) ? '' : JSON.stringify(req.body)
 )
 
 const app = express()
@@ -14,7 +14,7 @@ app.use(bodyParser.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 app.get('/api/persons', (req, res, next) => {
-  Person 
+  Person
     .find({})
     .then(persons => {
       res.json(persons)
@@ -22,11 +22,18 @@ app.get('/api/persons', (req, res, next) => {
     .catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const person = persons.find(person => person.id === id)
-  if (!person) return res.status('404').end()
-  res.json(person)
+app.get('/api/persons/:id', (req, res, next) => {
+
+  Person
+    .findById(req.params.id)
+    .then(person => {
+      if (person) {
+        res.json(person)
+      } else {
+        res.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
 const sendError = (res, status, message) => {
@@ -35,9 +42,9 @@ const sendError = (res, status, message) => {
 
 app.post('/api/persons', (req, res, next) => {
   const body = req.body
-  if (!body.name) return sendError(res, '400', {error: 'Name is missing'})
-  if (!body.number) return sendError(res, '400', {error: 'Number is missing'})
-  
+  if (!body.name) return sendError(res, '400', { error: 'Name is missing' })
+  if (!body.number) return sendError(res, '400', { error: 'Number is missing' })
+
   // if (persons.find(person => person.name === body.name)) {
   //   return sendError(res, '409', {error: 'Name must be unique'})
   // }
@@ -49,7 +56,7 @@ app.post('/api/persons', (req, res, next) => {
   person.save().then(savedPerson => {
     res.json(savedPerson)
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
@@ -59,7 +66,7 @@ app.put('/api/persons/:id', (req, res, next) => {
   }
 
   Person
-    .findByIdAndUpdate(req.params.id, person, {new: true})
+    .findByIdAndUpdate(req.params.id, person, { new: true })
     .then(updatedPerson => {
       if (!updatedPerson) {
         res.status(404).end()
@@ -81,10 +88,16 @@ app.delete('/api/persons/:id', (req, res, next) => {
 })
 
 app.get('/info', (req, res) => {
-  res.setHeader("Content-Type", "text/html; charset=utf-8")
-  res.write(`<div>Puhelinluettelossa ${persons.length} henkilön tiedot</div>`)
-  res.write(`<div>${Date().toString()}</div>`)
-  res.end()
+  Person
+    .count({})
+    .then(count => {
+      res.setHeader("Content-Type", "text/html; charset=utf-8")
+      res.write(`<div>Puhelinluettelossa ${count} henkilön tiedot</div>`)
+      res.write(`<div>${Date().toString()}</div>`)
+      res.end()
+    })
+    .catch(error => next(error))
+
 })
 
 const isEmptyObject = object => Object.keys(object).length === 0
@@ -94,7 +107,7 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError' && error.kind == 'ObjectId') {
     return response.status(400).send({ error: 'Malformatted id' })
-  } 
+  }
 
   next(error)
 }
