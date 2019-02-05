@@ -40,7 +40,7 @@ app.post('/api/persons', (req, res) => {
   // if (persons.find(person => person.name === body.name)) {
   //   return sendError(res, '409', {error: 'Name must be unique'})
   // }
-  
+
   const person = new Person({
     name: body.name,
     number: body.number
@@ -51,9 +51,11 @@ app.post('/api/persons', (req, res) => {
 })
 
 app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  persons = persons.filter(person => person.id !== id)
-  res.status(204).end()
+  Person
+    .findByIdAndDelete(req.params.id)
+    .then(() => {
+      res.status(204).end()
+    })
 })
 
 app.get('/info', (req, res) => {
