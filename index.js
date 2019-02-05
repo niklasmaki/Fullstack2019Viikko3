@@ -1,6 +1,8 @@
+require('dotenv').config()
 const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
+const Person = require('./models/person')
 
 morgan.token('body', req => 
   isEmptyObject(req.body) ? '' : JSON.stringify(req.body) 
@@ -11,32 +13,12 @@ app.use(express.static('build'))
 app.use(bodyParser.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-let persons = 
-[
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "045-1236543"
-  },
-  {
-    id: 2,
-    name: "Arto Järvinen",
-    number: "041-21423123"
-  },
-  {
-    id: 3,
-    name: "Lea Kutvonen",
-    number: "040-4323234"
-  },
-  {
-    id: 4,
-    name: "Martti Tienari",
-    number: "09-784232"
-  }
-]
-
 app.get('/api/persons', (req, res) => {
-  res.json(persons)
+  Person 
+    .find({})
+    .then(persons => {
+      res.json(persons)
+    })
 })
 
 app.get('/api/persons/:id', (req, res) => {
@@ -81,5 +63,5 @@ app.get('/info', (req, res) => {
 
 const isEmptyObject = object => Object.keys(object).length === 0
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
