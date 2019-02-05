@@ -13,12 +13,13 @@ app.use(express.static('build'))
 app.use(bodyParser.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons', (req, res, next) => {
   Person 
     .find({})
     .then(persons => {
       res.json(persons)
     })
+    .catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (req, res) => {
@@ -32,7 +33,7 @@ const sendError = (res, status, message) => {
   res.status(status).json(message)
 }
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body
   if (!body.name) return sendError(res, '400', {error: 'Name is missing'})
   if (!body.number) return sendError(res, '400', {error: 'Number is missing'})
@@ -48,14 +49,16 @@ app.post('/api/persons', (req, res) => {
   person.save().then(savedPerson => {
     res.json(savedPerson)
   })
+  .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
   Person
     .findByIdAndDelete(req.params.id)
     .then(() => {
       res.status(204).end()
     })
+    .catch(error => next(error))
 })
 
 app.get('/info', (req, res) => {
@@ -66,6 +69,18 @@ app.get('/info', (req, res) => {
 })
 
 const isEmptyObject = object => Object.keys(object).length === 0
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError' && error.kind == 'ObjectId') {
+    return response.status(400).send({ error: 'Malformatted id' })
+  } 
+
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
