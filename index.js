@@ -36,18 +36,8 @@ app.get('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error))
 })
 
-const sendError = (res, status, message) => {
-  res.status(status).json(message)
-}
-
 app.post('/api/persons', (req, res, next) => {
   const body = req.body
-  if (!body.name) return sendError(res, '400', { error: 'Name is missing' })
-  if (!body.number) return sendError(res, '400', { error: 'Number is missing' })
-
-  // if (persons.find(person => person.name === body.name)) {
-  //   return sendError(res, '409', {error: 'Name must be unique'})
-  // }
 
   const person = new Person({
     name: body.name,
@@ -105,8 +95,10 @@ const isEmptyObject = object => Object.keys(object).length === 0
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
-  if (error.name === 'CastError' && error.kind == 'ObjectId') {
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
     return response.status(400).send({ error: 'Malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)
