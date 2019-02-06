@@ -51,12 +51,11 @@ app.post('/api/persons', (req, res, next) => {
 
 app.put('/api/persons/:id', (req, res, next) => {
   const person = {
-    name: req.body.name,
     number: req.body.number
   }
 
   Person
-    .findByIdAndUpdate(req.params.id, person, { new: true })
+    .findByIdAndUpdate(req.params.id, person, { new: true, runValidators: true })
     .then(updatedPerson => {
       if (!updatedPerson) {
         res.status(404).end()
