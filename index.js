@@ -78,11 +78,11 @@ app.delete('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error))
 })
 
-app.get('/info', (req, res) => {
+app.get('/info', (req, res, next) => {
   Person
     .count({})
     .then(count => {
-      res.setHeader("Content-Type", "text/html; charset=utf-8")
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
       res.write(`<div>Puhelinluettelossa ${count} henkilön tiedot</div>`)
       res.write(`<div>${Date().toString()}</div>`)
       res.end()

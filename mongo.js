@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-if ( process.argv.length < 3 || process.argv.length == 4 ) {
+if (process.argv.length < 3 || process.argv.length === 4) {
   console.log('Usage: node mongo.js <password>')
   console.log('OR     node mongo.js <password> <name> <number>')
   process.exit(1)
@@ -24,20 +24,20 @@ const Person = mongoose.model('Person', personSchema)
 
 if (process.argv.length === 3) {
   Person.find({})
-  .then(result => {
-    console.log("Puhelinluettelo: ")
-    result.forEach(person => {
-      console.log(person.name, person.number)
+    .then(result => {
+      console.log('Puhelinluettelo: ')
+      result.forEach(person => {
+        console.log(person.name, person.number)
+      })
+
+      mongoose.connection.close()
     })
-    
-    mongoose.connection.close()
-  })
 } else {
   const person = new Person({
     name: process.argv[3],
     number: process.argv[4]
   })
-  person.save().then(response => {
+  person.save().then(() => {
     console.log(`Lisätään ${person.name} numero ${person.number} luetteloon.`)
     mongoose.connection.close()
   })
